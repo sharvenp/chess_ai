@@ -209,11 +209,11 @@ class MinMax():
         # return choice(get_all_legal_moves_for_side(-1, curr_state.board))
         
         res = board.result()
-        if res == '1-0': # White Won
-            return float('inf')
-        elif res == '0-1': # Black Won
+        if res == '1-0': 
             return -float('inf')
-        elif res == '1/2-1/2': # Draw
+        elif res == '0-1': 
+            return float('inf')
+        elif res == '1/2-1/2':
             return 0
 
         if depth == 0:
