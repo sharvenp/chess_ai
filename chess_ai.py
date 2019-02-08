@@ -210,9 +210,9 @@ class MinMax():
         
         res = board.result()
         if res == '1-0': 
-            return -float('inf')
-        elif res == '0-1': 
             return float('inf')
+        elif res == '0-1': 
+            return -float('inf')
         elif res == '1/2-1/2':
             return 0
 
@@ -261,7 +261,6 @@ def main():
         try:
             if board.is_game_over():
                 print("GAME OVER")
-                return
 
             move = None
 
@@ -281,7 +280,7 @@ def main():
 
             elif curr_turn == ai:
                 print('Thinking')
-                move = mm.run_minmax(3, board, True)
+                move = mm.run_minmax(5, board, True)
                 print("AI MOVE:", move)
             
             if move in board.legal_moves:
