@@ -1,7 +1,7 @@
 # chess_ai
 Simple Neural Chess AI with MiniMax
 
-Based on Matthia Sabatelli's Master Thesis on Neural Chess, this AI uses a standard MLP that takes in a board position as outputs an evaluation.
+Based on Matthia Sabatelli's Master Thesis on Neural Chess, this AI uses a standard MLP that takes in a board position and outputs an evaluation.
 
 By using neural nets as function approximators, the MLP can be trained to approximate Stockfish's powerful evaluation function.
 
