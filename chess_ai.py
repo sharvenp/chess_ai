@@ -1,8 +1,11 @@
 import chess
+import chess.pgn
 from graphics import *
+import io
 import numpy as np
 import traceback
 import math as m
+import time
 
 graphic_board = None
 scale = 70
@@ -244,7 +247,9 @@ class MinMax():
 
 def main():
         
-    board = chess.Board()
+    pgn = open('datasets/ficsgamesdb_2018_CvC_nomovetimes_51973.pgn')
+    game = chess.pgn.read_game(pgn)
+    board = game.board()
     mm = MinMax()
     resize_images()
     graphic_board = convert_position_board_to_actual(board)
