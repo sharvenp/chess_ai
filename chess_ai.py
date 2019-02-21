@@ -1,7 +1,7 @@
 import chess
 import chess.pgn
+import chess.engine
 from graphics import *
-import io
 import numpy as np
 import traceback
 import math as m
@@ -24,7 +24,6 @@ under_check_color = color_rgb(247, 118, 118)
 
 win = GraphWin("Chess.py by Sharven", width + 100, height)
 win.setBackground(background_color)
-
 animation_speed = 100 # Higher is slower
 
 value_text = Text(Point(width + 50, 50), 'Score')
@@ -33,6 +32,8 @@ value_text.setSize(16)
 value_text.setStyle("bold")
 value_text.setTextColor('white')
 value_text.draw(win)
+
+EVAL_TIME = 0.100
 
 piece_value_dict = {
     'P' : 1,
@@ -247,10 +248,9 @@ class MinMax():
 
 def main():
         
-    pgn = open('datasets/ficsgamesdb_2018_CvC_nomovetimes_51973.pgn')
-    game = chess.pgn.read_game(pgn)
-    board = game.board()
-    mm = MinMax()
+    engine = chess.engine.SimpleEngine.popen_uci("stockfish10/Windows/stockfish_10_x64.exe")
+    board = chess.Board()
+    # mm = MinMax()
     resize_images()
     graphic_board = convert_position_board_to_actual(board)
     init_graphics(board, graphic_board)
@@ -266,6 +266,7 @@ def main():
         try:
             if board.is_game_over():
                 print("GAME OVER")
+                break
 
             move = None
 
@@ -285,8 +286,11 @@ def main():
 
             elif curr_turn == ai:
                 print('Thinking')
-                move = mm.run_minmax(5, board, True)
-                print("AI MOVE:", move)
+                # move = mm.run_minmax(5, board, True)
+                # move = mm.play(board, chess.engine.Limit(time=1)).move
+                evaluation = engine.analyse(board, chess.engine.Limit(time=EVAL_TIME))
+                print(evaluation)
+                print("AI MOVE:", evaluation.move, "Evaluation: ", evaluation['score']/100.0)
             
             if move in board.legal_moves:
                 # if curr_turn == ai:
@@ -308,6 +312,8 @@ def main():
             if str(e) == "getMouse in closed window":
                 quit()
             traceback.print_exc()
+
+    
 
 if __name__ == "__main__":
     main()
