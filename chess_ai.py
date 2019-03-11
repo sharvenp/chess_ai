@@ -255,6 +255,17 @@ def main():
     graphic_board = convert_position_board_to_actual(board)
     init_graphics(board, graphic_board)
 
+    # game = chess.pgn.read_game(open("datasets/ficsgamesdb_2018_CvC_nomovetimes_51973.pgn"))
+    # node = game 
+    # while node.variations:
+    #     next_node = node.variation(0)
+    #     board.push(next_node.move)
+    #     undraw_all(graphic_board)
+    #     graphic_board = convert_position_board_to_actual(board)
+    #     draw_board(board, graphic_board)
+    #     node = next_node
+    #     time.sleep(0.5)
+    
     turn_count = 1
     player = 1
     ai = 0
@@ -287,11 +298,11 @@ def main():
             elif curr_turn == ai:
                 print('Thinking')
                 # move = mm.run_minmax(5, board, True)
-                # move = mm.play(board, chess.engine.Limit(time=1)).move
+                move = engine.play(board, chess.engine.Limit(time=1)).move
                 evaluation = engine.analyse(board, chess.engine.Limit(time=EVAL_TIME))
-                print(evaluation)
-                print("AI MOVE:", evaluation.move, "Evaluation: ", evaluation['score']/100.0)
-            
+                score = (evaluation['score'].relative.score()/100.0)*(2*curr_turn-1)
+                value_text.setText(str(score))
+
             if move in board.legal_moves:
                 # if curr_turn == ai:
                 #     s = conver_int_to_position(move.from_square)

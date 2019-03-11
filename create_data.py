@@ -10,47 +10,48 @@ import chess.engine
 import time
 import numpy as np
 
-data_individual = []
+def get_bit_map(node):
 
-engine = chess.engine.SimpleEngine.popen_uci("stockfish10/Windows/stockfish_10_x64.exe")
-game = chess.pgn.read_game(open("datasets/ficsgamesdb_2018_CvC_nomovetimes_51973.pgn"))
-node = game 
-final_bit_map = []
-output_data = []
+    data_individual = [] 
+    # White Pieces
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.PAWN, chess.WHITE))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.ROOK, chess.WHITE))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KNIGHT, chess.WHITE))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.BISHOP, chess.WHITE))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.QUEEN, chess.WHITE))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KING, chess.WHITE))).replace('', ' '), dtype=int, sep=' ').tolist())
 
-while node.variations: 
-    
-    next_node = node.variation(0)
+    # Black Pieces
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.PAWN, chess.BLACK))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.ROOK, chess.BLACK))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KNIGHT, chess.BLACK))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.BISHOP, chess.BLACK))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.QUEEN, chess.BLACK))).replace('', ' '), dtype=int, sep=' ').tolist())
+    data_individual.extend(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KING, chess.BLACK))).replace('', ' '), dtype=int, sep=' ').tolist())
 
-    evaluation = engine.analyse(next_node.board(), chess.engine.Limit(time=1))
-    score = (2*int(next_node.board().turn) -1) * (evaluation['score'].relative.score(mate_score=1000000))/100.0
-    print(score, "\n", next_node.board())
+    return data_individual
 
-    # data_individual = [] 
-    # final_bit_map = []
+def main():
 
-    # # White Pieces
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.PAWN, chess.WHITE))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.ROOK, chess.WHITE))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KNIGHT, chess.WHITE))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.BISHOP, chess.WHITE))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.QUEEN, chess.WHITE))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KING, chess.WHITE))).replace('', ' '), dtype=int, sep=' '))
+    engine = chess.engine.SimpleEngine.popen_uci("stockfish10/Windows/stockfish_10_x64.exe")
+    game = chess.pgn.read_game(open("datasets/ficsgamesdb_2018_CvC_nomovetimes_51973.pgn"))
+    node = game 
+    output_data = []
 
-    # # Black Pieces
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.PAWN, chess.BLACK))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.ROOK, chess.BLACK))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KNIGHT, chess.BLACK))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.BISHOP, chess.BLACK))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.QUEEN, chess.BLACK))).replace('', ' '), dtype=int, sep=' '))
-    # data_individual.append(np.fromstring('{:064b}'.format(int(node.board().pieces(chess.KING, chess.BLACK))).replace('', ' '), dtype=int, sep=' '))
+    while node.variations: 
+        
+        next_node = node.variation(0)
+        evaluation = engine.analyse(next_node.board(), chess.engine.Limit(time=1))
+        score = (2*int(next_node.board().turn) -1) * (evaluation['score'].relative.score(mate_score=1000000))/100.0
+        output_data.append((get_bit_map(next_node), score))
+        node = next_node
 
-    # for bit_map in data_individual:
-    #     final_bit_map = np.append(final_bit_map, bit_map)
+    engine.quit()
+    print("Dataset created.")
+    print("Dumping to JSON")
 
-    # output_data.append(final_bit_map)
+    with open('data.json', 'w') as outfile:
+        json.dump(output_data, outfile)
 
-    node = next_node
-
-engine.quit()
-print("Dataset created.")
+if __name__ == "__main__":
+    main()
