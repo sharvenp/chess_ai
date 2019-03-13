@@ -9,7 +9,7 @@ import chess.pgn
 import chess.engine
 import time
 import numpy as np
-import random 
+import math
 
 def get_bit_map(node):
 
@@ -32,13 +32,17 @@ def get_bit_map(node):
 
     return data_individual
 
+def sigmoid(x):
+    return 1/(1+(math.e**-x))
+
 def main():
 
     engine = chess.engine.SimpleEngine.popen_uci("stockfish10/Windows/stockfish_10_x64.exe")
-    output_data = []
+    X = []
+    Y = []
     pgn = open("datasets/ficsgamesdb_2018_CvC_nomovetimes_51973.pgn")
-    state_limit = 30
-    games = 600
+    state_limit = 60
+    games = 300
     evaluation_time = 1
     start = time.time()
 
@@ -46,30 +50,38 @@ def main():
 
     for i in range(games):
 
-        node = chess.pgn.read_game(pgn)
+        game = chess.pgn.read_game(pgn)
+        board = game.board()
         states = 0
-        print("Game:", i+1, "(", node.headers["Event"] ,")")
+        print("Game:", i+1, f"({game.headers['Event']})")
 
-        while node.variations and states < state_limit: 
+        for next_node in game.mainline_moves(): 
             
-            next_node = node.variation(random.randint(0, len(node.variations)-1))
-            evaluation = engine.analyse(next_node.board(), chess.engine.Limit(time=evaluation_time))
-            score = (2*int(next_node.board().turn) -1) * (evaluation['score'].relative.score(mate_score=1000000))/100.0
-            output_data.append((get_bit_map(next_node.board()), score))
-            node = next_node
+            evaluation = engine.analyse(board, chess.engine.Limit(time=evaluation_time))
+            score = sigmoid((2*int(board.turn) -1) * (evaluation['score'].relative.score(mate_score=1000000)))
+            X.append(get_bit_map(board))
+            Y.append(score)
             states += 1
+
+            board.push(next_node)
+
+            if states >= state_limit:
+                break
 
         end = time.time()
         print("States:", states)
-        print(f"Time Elapsed: {end-start}")
+        hours, rem = divmod(end-start, 3600)
+        minutes, seconds = divmod(rem, 60)
+        print(f"Time Elapsed:", "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 
     engine.quit()
+
     print("Dataset created")
-    print("Size:", len(output_data))
+    print("Samples:", len(X), "Labels:", len(Y))
     print("Dumping to JSON")
 
     with open('data.json', 'w') as outfile:
-        json.dump(output_data, outfile)
+        json.dump([X,Y], outfile)
 
 if __name__ == "__main__":
     main()
